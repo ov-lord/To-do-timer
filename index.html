@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>To-Do List with Timer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>To-Do List with Timer</h1>
+
+  <div class="task-form">
+    <input type="text" id="taskName" placeholder="Enter task (account name)" />
+    <select id="taskType">
+      <option value="To Serenite">To Serenite</option>
+      <option value="From Serenite">From Serenite</option>
+      <option value="To Serenite Bébé">To Serenite Bébé</option>
+      <option value="From Serenite Bébé">From Serenite Bébé</option>
+      <option value="Acouplement">Acouplement</option>
+      <option value="Certificates">Certificates</option>
+    </select>
+    <button onclick="addTask()">Add Task</button>
+  </div>
+
+  <div class="task-list" id="taskList"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
