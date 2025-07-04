@@ -1,18 +1,25 @@
-// --- Access Code Protection ---
 const ACCESS_CODE = "Mhd";
-const savedCode = localStorage.getItem("access_code");
 
-if (savedCode !== ACCESS_CODE) {
-  const userInput = prompt("Enter access code:");
-  if (userInput !== ACCESS_CODE) {
-    document.body.innerHTML = "<h1>Access Denied</h1>";
-    throw new Error("Access denied.");
+window.checkPassword = () => {
+  const input = document.getElementById("passwordInput").value;
+  if (input === ACCESS_CODE) {
+    localStorage.setItem("access_code", input);
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("mainApp").style.display = "block";
   } else {
-    localStorage.setItem("access_code", userInput);
+    alert("Incorrect password.");
   }
-}
-// --- End of Access Code Protection ---
+};
 
+const savedCode = localStorage.getItem("access_code");
+if (savedCode === ACCESS_CODE) {
+  window.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("mainApp").style.display = "block";
+  });
+}
+
+// Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore,
@@ -37,75 +44,78 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const tasksRef = collection(db, "tasks");
 
-document.getElementById("addTask").onclick = async () => {
-  const name = document.getElementById('taskName').value.trim();
-  const type = document.getElementById('taskType').value;
-  if (!name) return alert("Enter a task name");
+document.addEventListener("DOMContentLoaded", () => {
+  const addBtn = document.getElementById("addTask");
+  if (addBtn) {
+    addBtn.onclick = async () => {
+      const name = document.getElementById('taskName').value.trim();
+      const type = document.getElementById('taskType').value;
+      if (!name) return alert("Enter a task name");
+      await addDoc(tasksRef, { name, type, createdAt: Date.now() });
+      document.getElementById('taskName').value = '';
+    };
+  }
 
-  await addDoc(tasksRef, {
-    name,
-    type,
-    createdAt: Date.now()
-  });
+  function renderTask(docSnapshot) {
+    const data = docSnapshot.data();
+    const now = Date.now();
+    const hours = Math.floor((now - data.createdAt) / (1000 * 60 * 60));
+    const days = Math.floor((now - data.createdAt) / (1000 * 60 * 60 * 24));
+    const timeDisplay = data.type.toLowerCase() === "certificat" ? `${days}d` : `${hours}h`;
 
-  document.getElementById('taskName').value = '';
-};
+    const taskDiv = document.createElement("div");
+    taskDiv.className = "task";
+    if (hours >= 120) taskDiv.classList.add("red");
+    else if (hours >= 50) taskDiv.classList.add("yellow");
 
-function renderTask(docSnapshot) {
-  const data = docSnapshot.data();
-  const now = Date.now();
-  const hours = Math.floor((now - data.createdAt) / (1000 * 60 * 60));
-  const days = Math.floor((now - data.createdAt) / (1000 * 60 * 60 * 24));
-  const timeDisplay = data.type.toLowerCase() === "certificat" ? \`\${days}d\` : \`\${hours}h\`;
+    const info = document.createElement("div");
+    info.className = "task-info";
+    info.innerHTML = `<strong>${data.name}</strong> — <span class="task-timer">${timeDisplay}</span>`;
 
-  const taskDiv = document.createElement("div");
-  taskDiv.className = "task";
-  if (hours >= 120) taskDiv.classList.add("red");
-  else if (hours >= 50) taskDiv.classList.add("yellow");
-
-  const info = document.createElement("div");
-  info.className = "task-info";
-  info.innerHTML = \`<strong>\${data.name}</strong> — <span class="task-timer">\${timeDisplay}</span>\`;
-
-  const typeSelect = document.createElement("select");
-  const options = [
-    "Acouplement", "To Sereniter", "From Sereniter", "To Sereniter Bébé", "From Sereniter Bébé",
-    "To Water Bébé", "To Énergie", "XP", "Certificat", "Problem"
-  ];
-  options.forEach(opt => {
-    const option = document.createElement("option");
-    option.value = opt;
-    option.textContent = opt;
-    if (opt === data.type) option.selected = true;
-    typeSelect.appendChild(option);
-  });
-  typeSelect.onchange = async () => {
-    await updateDoc(doc(tasksRef, docSnapshot.id), {
-      type: typeSelect.value
+    const typeSelect = document.createElement("select");
+    const options = [
+      "Acouplement", "To Sereniter", "From Sereniter", "To Sereniter Bébé", "From Sereniter Bébé",
+      "To Water Bébé", "To Énergie", "XP", "Certificat", "Problem"
+    ];
+    options.forEach(opt => {
+      const option = document.createElement("option");
+      option.value = opt;
+      option.textContent = opt;
+      if (opt === data.type) option.selected = true;
+      typeSelect.appendChild(option);
     });
-  };
+    typeSelect.onchange = async () => {
+      await updateDoc(doc(tasksRef, docSnapshot.id), { type: typeSelect.value });
+    };
 
-  const deleteBtn = document.createElement("button");
-  deleteBtn.textContent = "Delete";
-  deleteBtn.onclick = async () => {
-    await deleteDoc(doc(tasksRef, docSnapshot.id));
-  };
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "Delete";
+    deleteBtn.onclick = async () => {
+      await deleteDoc(doc(tasksRef, docSnapshot.id));
+    };
 
-  taskDiv.appendChild(info);
-  taskDiv.appendChild(typeSelect);
-  taskDiv.appendChild(deleteBtn);
+    taskDiv.appendChild(info);
+    taskDiv.appendChild(typeSelect);
+    taskDiv.appendChild(deleteBtn);
 
-  document.getElementById("taskList").appendChild(taskDiv);
-}
+    document.getElementById("taskList").appendChild(taskDiv);
+  }
 
-onSnapshot(tasksRef, (snapshot) => {
-  document.getElementById("taskList").innerHTML = "";
-  snapshot.forEach(renderTask);
-});
-
-setInterval(() => {
-  document.getElementById("taskList").innerHTML = "";
   onSnapshot(tasksRef, (snapshot) => {
-    snapshot.forEach(renderTask);
+    const taskList = document.getElementById("taskList");
+    if (taskList) {
+      taskList.innerHTML = "";
+      snapshot.forEach(renderTask);
+    }
   });
-}, 60000);
+
+  setInterval(() => {
+    const taskList = document.getElementById("taskList");
+    if (taskList) {
+      taskList.innerHTML = "";
+      onSnapshot(tasksRef, (snapshot) => {
+        snapshot.forEach(renderTask);
+      });
+    }
+  }, 60000);
+});
