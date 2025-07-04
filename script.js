@@ -1,27 +1,4 @@
-// 🔐 Login protection
-const ACCESS_CODE = "Mhd";
-const savedCode = localStorage.getItem("access_code");
 
-if (savedCode !== ACCESS_CODE) {
-  document.getElementById("mainApp").style.display = "none";
-  document.getElementById("loginScreen").style.display = "block";
-
-  window.checkPassword = () => {
-    const input = document.getElementById("passwordInput").value;
-    if (input === ACCESS_CODE) {
-      localStorage.setItem("access_code", input);
-      document.getElementById("loginScreen").style.display = "none";
-      document.getElementById("mainApp").style.display = "block";
-      initializeAppLogic();
-    } else {
-      alert("Incorrect password");
-    }
-  };
-} else {
-  document.getElementById("loginScreen").style.display = "none";
-  document.getElementById("mainApp").style.display = "block";
-  initializeAppLogic();
-}
 
 // 🔌 Firebase imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
