@@ -1,8 +1,29 @@
-// Import Firebase
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+// --- Access Code Protection ---
+const ACCESS_CODE = "Mhd";
+const savedCode = localStorage.getItem("access_code");
 
-// Your Firebase config
+if (savedCode !== ACCESS_CODE) {
+  const userInput = prompt("Enter access code:");
+  if (userInput !== ACCESS_CODE) {
+    document.body.innerHTML = "<h1>Access Denied</h1>";
+    throw new Error("Access denied.");
+  } else {
+    localStorage.setItem("access_code", userInput);
+  }
+}
+// --- End of Access Code Protection ---
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyBm-z3hpxg5rciZ3JGLOCqlpBOs8IlmAyE",
   authDomain: "todo-timer-df95d.firebaseapp.com",
@@ -12,17 +33,11 @@ const firebaseConfig = {
   appId: "1:751788670704:web:188701fc15172ad20e0c35"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const tasksRef = collection(db, "tasks");
 
-// DOM Elements
-const addBtn = document.getElementById("addTask");
-const taskList = document.getElementById("taskList");
-
-// Add task to Firestore
-addBtn.onclick = async () => {
+document.getElementById("addTask").onclick = async () => {
   const name = document.getElementById('taskName').value.trim();
   const type = document.getElementById('taskType').value;
   if (!name) return alert("Enter a task name");
@@ -36,43 +51,61 @@ addBtn.onclick = async () => {
   document.getElementById('taskName').value = '';
 };
 
-// Render tasks
-function renderTask(doc) {
-  const data = doc.data();
+function renderTask(docSnapshot) {
+  const data = docSnapshot.data();
   const now = Date.now();
   const hours = Math.floor((now - data.createdAt) / (1000 * 60 * 60));
+  const days = Math.floor((now - data.createdAt) / (1000 * 60 * 60 * 24));
+  const timeDisplay = data.type.toLowerCase() === "certificat" ? \`\${days}d\` : \`\${hours}h\`;
 
   const taskDiv = document.createElement("div");
   taskDiv.className = "task";
-  if (hours >= 120) {
-    taskDiv.classList.add("red");
-  } else if (hours >= 50) {
-    taskDiv.classList.add("yellow");
-  }
+  if (hours >= 120) taskDiv.classList.add("red");
+  else if (hours >= 50) taskDiv.classList.add("yellow");
 
   const info = document.createElement("div");
   info.className = "task-info";
-  info.innerHTML = `<strong>${data.name}</strong> — <em>${data.type}</em><span class="task-timer">${hours}h</span>`;
+  info.innerHTML = \`<strong>\${data.name}</strong> — <span class="task-timer">\${timeDisplay}</span>\`;
 
-  const delBtn = document.createElement("button");
-  delBtn.textContent = "Delete";
-  delBtn.onclick = async () => {
-    await deleteDoc(doc.ref);
+  const typeSelect = document.createElement("select");
+  const options = [
+    "Acouplement", "To Sereniter", "From Sereniter", "To Sereniter Bébé", "From Sereniter Bébé",
+    "To Water Bébé", "To Énergie", "XP", "Certificat", "Problem"
+  ];
+  options.forEach(opt => {
+    const option = document.createElement("option");
+    option.value = opt;
+    option.textContent = opt;
+    if (opt === data.type) option.selected = true;
+    typeSelect.appendChild(option);
+  });
+  typeSelect.onchange = async () => {
+    await updateDoc(doc(tasksRef, docSnapshot.id), {
+      type: typeSelect.value
+    });
+  };
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.textContent = "Delete";
+  deleteBtn.onclick = async () => {
+    await deleteDoc(doc(tasksRef, docSnapshot.id));
   };
 
   taskDiv.appendChild(info);
-  taskDiv.appendChild(delBtn);
-  taskList.appendChild(taskDiv);
+  taskDiv.appendChild(typeSelect);
+  taskDiv.appendChild(deleteBtn);
+
+  document.getElementById("taskList").appendChild(taskDiv);
 }
 
-// Real-time updates
 onSnapshot(tasksRef, (snapshot) => {
-  taskList.innerHTML = "";
-  snapshot.forEach(doc => renderTask(doc));
+  document.getElementById("taskList").innerHTML = "";
+  snapshot.forEach(renderTask);
 });
 
-// Update timers every 1 min
 setInterval(() => {
-  const event = new Event("firestore-refresh");
-  document.dispatchEvent(event);
+  document.getElementById("taskList").innerHTML = "";
+  onSnapshot(tasksRef, (snapshot) => {
+    snapshot.forEach(renderTask);
+  });
 }, 60000);
