@@ -23,7 +23,7 @@ if (savedCode !== ACCESS_CODE) {
   initializeAppLogic();
 }
 
-// 🔌 Firebase imports
+// 🔌 Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore,
@@ -31,10 +31,13 @@ import {
   addDoc,
   deleteDoc,
   doc,
-  onSnapshot
+  onSnapshot,
+  updateDoc,
+  query,
+  orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// 🔧 Firebase config
+// 🔧 Config
 const firebaseConfig = {
   apiKey: "AIzaSyBm-z3hpxg5rciZ3JGLOCqlpBOs8IlmAyE",
   authDomain: "todo-timer-df95d.firebaseapp.com",
@@ -44,12 +47,11 @@ const firebaseConfig = {
   appId: "1:751788670704:web:188701fc15172ad20e0c35"
 };
 
-// 🔥 Init Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const tasksRef = collection(db, "tasks");
+const tasksQuery = query(tasksRef, orderBy("createdAt", "asc")); // oldest first
 
-// ✅ App logic
 function initializeAppLogic() {
   const addBtn = document.getElementById("addTask");
   const taskList = document.getElementById("taskList");
@@ -80,8 +82,30 @@ function initializeAppLogic() {
 
     const info = document.createElement("div");
     info.className = "task-info";
-    info.innerHTML = `<strong>${data.name}</strong> — <em>${data.type}</em><span class="task-timer">${hours}h</span>`;
+    info.innerHTML = `<strong>${data.name}</strong> — <span class="task-timer">${hours}h</span>`;
 
+    // 🛠️ Update Dropdown
+    const typeSelect = document.createElement("select");
+    const options = [
+      "Acouplement", "To Sereniter", "From Sereniter", "To Sereniter Bébé",
+      "From Sereniter Bébé", "To Water Bébé", "To Énergie", "XP",
+      "Certificat", "Problem"
+    ];
+    options.forEach(opt => {
+      const option = document.createElement("option");
+      option.value = opt;
+      option.textContent = opt;
+      if (opt === data.type) option.selected = true;
+      typeSelect.appendChild(option);
+    });
+
+    typeSelect.onchange = async () => {
+      await updateDoc(doc(tasksRef, docSnapshot.id), {
+        type: typeSelect.value
+      });
+    };
+
+    // ❌ Delete button
     const delBtn = document.createElement("button");
     delBtn.textContent = "Delete";
     delBtn.onclick = async () => {
@@ -89,18 +113,21 @@ function initializeAppLogic() {
     };
 
     taskDiv.appendChild(info);
+    taskDiv.appendChild(typeSelect);
     taskDiv.appendChild(delBtn);
     taskList.appendChild(taskDiv);
   }
 
-  onSnapshot(tasksRef, (snapshot) => {
+  // 🔁 Real-time + ordered by time
+  onSnapshot(tasksQuery, (snapshot) => {
     taskList.innerHTML = "";
     snapshot.forEach(renderTask);
   });
 
+  // 🔄 Update timers every 60s
   setInterval(() => {
     taskList.innerHTML = "";
-    onSnapshot(tasksRef, (snapshot) => {
+    onSnapshot(tasksQuery, (snapshot) => {
       snapshot.forEach(renderTask);
     });
   }, 60000);
