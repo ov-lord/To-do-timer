@@ -3,30 +3,38 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>To-Do List</title>
+  <title>To-Do List with Timer</title>
   <link rel="stylesheet" href="style.css" />
   <script type="module" src="script.js" defer></script>
 </head>
 <body>
-  <h1>To-Do List</h1>
-
-  <div class="task-form">
-    <input type="text" id="taskName" placeholder="Account name" />
-    <select id="taskType">
-      <option value="Acouplement">Acouplement</option>
-      <option value="To Sereniter">To Sereniter</option>
-      <option value="From Sereniter">From Sereniter</option>
-      <option value="To Sereniter Bébé">To Sereniter Bébé</option>
-      <option value="From Sereniter Bébé">From Sereniter Bébé</option>
-      <option value="To Water Bébé">To Water Bébé</option>
-      <option value="To Énergie">To Énergie</option>
-      <option value="XP">XP</option>
-      <option value="Certificat">Certificat</option>
-      <option value="Problem">Problem</option>
-    </select>
-    <button id="addTask">Add Task</button>
+  <div id="loginScreen" class="login-screen">
+    <h2>🔒 Enter Password</h2>
+    <input type="password" id="passwordInput" placeholder="Password" />
+    <button onclick="checkPassword()">Login</button>
   </div>
 
-  <div class="task-list" id="taskList"></div>
+  <div id="mainApp" style="display: none">
+    <h1>To-Do List with Timer</h1>
+
+    <div class="task-form">
+      <input type="text" id="taskName" placeholder="Enter task (account name)" />
+      <select id="taskType">
+        <option value="Acouplement">Acouplement</option>
+        <option value="To Sereniter">To Sereniter</option>
+        <option value="From Sereniter">From Sereniter</option>
+        <option value="To Sereniter Bébé">To Sereniter Bébé</option>
+        <option value="From Sereniter Bébé">From Sereniter Bébé</option>
+        <option value="To Water Bébé">To Water Bébé</option>
+        <option value="To Énergie">To Énergie</option>
+        <option value="XP">XP</option>
+        <option value="Certificat">Certificat</option>
+        <option value="Problem">Problem</option>
+      </select>
+      <button id="addTask">Add Task</button>
+    </div>
+
+    <div class="task-list" id="taskList"></div>
+  </div>
 </body>
 </html>

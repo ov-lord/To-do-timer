@@ -1,4 +1,4 @@
-// 🔐 PASSWORD PROTECTION
+// 🔐 Login protection
 const ACCESS_CODE = "Mhd";
 const savedCode = localStorage.getItem("access_code");
 
@@ -12,7 +12,7 @@ if (savedCode !== ACCESS_CODE) {
       localStorage.setItem("access_code", input);
       document.getElementById("loginScreen").style.display = "none";
       document.getElementById("mainApp").style.display = "block";
-      initializeAppLogic(); // ✅ start app logic after login
+      initializeAppLogic();
     } else {
       alert("Incorrect password");
     }
@@ -20,10 +20,10 @@ if (savedCode !== ACCESS_CODE) {
 } else {
   document.getElementById("loginScreen").style.display = "none";
   document.getElementById("mainApp").style.display = "block";
-  initializeAppLogic(); // ✅ already logged in
+  initializeAppLogic();
 }
 
-// 🔥 FIREBASE IMPORTS
+// 🔌 Firebase imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore,
@@ -34,7 +34,7 @@ import {
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// 🔧 FIREBASE CONFIG
+// 🔧 Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyBm-z3hpxg5rciZ3JGLOCqlpBOs8IlmAyE",
   authDomain: "todo-timer-df95d.firebaseapp.com",
@@ -44,20 +44,19 @@ const firebaseConfig = {
   appId: "1:751788670704:web:188701fc15172ad20e0c35"
 };
 
-// 🔌 INITIALIZE FIREBASE
+// 🔥 Init Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const tasksRef = collection(db, "tasks");
 
-// ✅ MAIN APP LOGIC
+// ✅ App logic
 function initializeAppLogic() {
   const addBtn = document.getElementById("addTask");
   const taskList = document.getElementById("taskList");
 
-  // ➕ Add Task
   addBtn.onclick = async () => {
-    const name = document.getElementById('taskName').value.trim();
-    const type = document.getElementById('taskType').value;
+    const name = document.getElementById("taskName").value.trim();
+    const type = document.getElementById("taskType").value;
     if (!name) return alert("Enter a task name");
 
     await addDoc(tasksRef, {
@@ -66,10 +65,9 @@ function initializeAppLogic() {
       createdAt: Date.now()
     });
 
-    document.getElementById('taskName').value = '';
+    document.getElementById("taskName").value = "";
   };
 
-  // 🎨 Render a Task
   function renderTask(docSnapshot) {
     const data = docSnapshot.data();
     const now = Date.now();
@@ -95,13 +93,11 @@ function initializeAppLogic() {
     taskList.appendChild(taskDiv);
   }
 
-  // 📡 Real-time listener
   onSnapshot(tasksRef, (snapshot) => {
     taskList.innerHTML = "";
     snapshot.forEach(renderTask);
   });
 
-  // 🔁 Update timers every minute
   setInterval(() => {
     taskList.innerHTML = "";
     onSnapshot(tasksRef, (snapshot) => {
