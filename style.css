@@ -53,22 +53,3 @@ input, select {
 .task select {
   padding: 5px;
 }
-.login-screen {
-  max-width: 300px;
-  margin: 80px auto;
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  text-align: center;
-}
-.login-screen input {
-  width: 100%;
-  padding: 10px;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  font-size: 16px;
-}
-.login-screen button {
-  width: 100%;
-}
